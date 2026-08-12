@@ -18,14 +18,12 @@ struct ImageGenView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                AuroraWallpaper()
-                ScrollView {
-                    VStack(spacing: 16) {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("画像生成")
-                                .font(.headline.weight(.semibold))
-                                .foregroundStyle(Design.accentSoft)
+            ScrollView {
+                VStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("画像生成")
+                            .font(.headline.weight(.semibold))
+                            .foregroundStyle(Design.accent)
                             TextField("生成したい画像の説明（例: 夕焼けの富士山、アニメ風）", text: $prompt, axis: .vertical)
                                 .lineLimit(1...4)
                                 .textFieldStyle(.roundedBorder)
@@ -67,7 +65,7 @@ struct ImageGenView: View {
                                     .font(.body.weight(.medium))
                             }
                             .buttonStyle(.bordered)
-                            .tint(Design.accentSoft)
+                            .tint(Design.accent)
                         }
 
                         if let status {
@@ -77,7 +75,6 @@ struct ImageGenView: View {
                         }
                     }
                     .padding()
-                }
             }
             .navigationTitle("画像生成")
             .navigationBarTitleDisplayMode(.inline)

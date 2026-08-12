@@ -47,14 +47,14 @@ struct APIClient {
 
     // MARK: - Chat (SSE streaming)
 
-    func streamChat(messages: [APIMessage]) -> AsyncThrowingStream<String, Error> {
+    func streamChat(messages: [APIMessage], allowImages: Bool) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
                     let (bytes, response) = try await URLSession.shared.bytes(for: makeRequest(path: "/chat/completions", body: [
                         "model": model,
                         "stream": true,
-                        "messages": messages.map { Self.messageBody($0) },
+                        "messages": messages.map { Self.messageBody($0, allowImages: allowImages) },
                     ]))
                     guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
                         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
@@ -99,16 +99,18 @@ struct APIClient {
 
     // MARK: - Internal
 
-    /// メッセージ本文を構築。画像があれば OpenAI 互換の image_url パーツにする
-    private static func messageBody(_ message: APIMessage) -> [String: Any] {
-        guard !message.images.isEmpty else {
+    /// メッセージ本文を構築。画像は allowImages (mimo ターン) のときだけ image_url として付ける。
+    /// text モデル (deepseek) は image_url を拒否するため、ここで確実に除去する。
+    private static func messageBody(_ message: APIMessage, allowImages: Bool) -> [String: Any] {
+        let images = allowImages ? message.images : []
+        guard !images.isEmpty else {
             return ["role": message.role, "content": message.content]
         }
         var parts: [[String: Any]] = []
         if !message.content.isEmpty {
             parts.append(["type": "text", "text": message.content])
         }
-        for image in message.images {
+        for image in images {
             parts.append(["type": "image_url", "image_url": ["url": "data:image/jpeg;base64,\(image.base64EncodedString())"]])
         }
         return ["role": message.role, "content": parts]

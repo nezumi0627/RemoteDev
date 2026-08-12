@@ -101,9 +101,6 @@ struct SettingsView: View {
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(AuroraWallpaper())
-            .listRowBackground(Color.clear)
             .navigationTitle("設定")
         }
     }
@@ -112,7 +109,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label(title, systemImage: icon)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Design.accentSoft)
+                .foregroundStyle(Design.accent)
             content()
         }
         .glassCard()

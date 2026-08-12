@@ -212,9 +212,6 @@ struct PCSyncView: View {
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(AuroraWallpaper())
-            .listRowBackground(Color.clear)
             .navigationTitle("PC同期")
             .task { await loadAll() }
             .onReceive(Timer.publish(every: 5, on: .main, in: .common).autoconnect()) { _ in

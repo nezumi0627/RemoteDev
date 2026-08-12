@@ -27,7 +27,6 @@ struct ContentView: View {
             }
         }
         .tint(Design.accent)
-        .preferredColorScheme(.dark)
     }
 }
 

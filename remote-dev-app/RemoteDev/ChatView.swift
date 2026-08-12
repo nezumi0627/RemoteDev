@@ -2,8 +2,8 @@
 //  ChatView.swift
 //  RemoteDev
 //
-//  メッセージアプリ品質のチャット。連結する吹き出し・日付区切り・コピー/リプライ/編集/再送信・画像添付。
-//  画像付きターンは mimo (vision)、ふだんは deepseek。
+//  シンプルでクリーンなチャット。フラットな吹き出し (iMessage 風)、
+//  コピー/リプライ/編集/再送信・画像添付。画像付きターンは mimo、ふだんは deepseek。
 //
 
 import SwiftUI
@@ -66,8 +66,6 @@ struct ChatListView: View {
                 }
             }
             .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .background(AuroraWallpaper())
             .navigationTitle("チャット")
         }
     }
@@ -79,28 +77,24 @@ struct ConversationRow: View {
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
-                Circle().fill(Design.userBubble)
+                Circle().fill(Design.accent)
                 Text(String(conversation.title.prefix(1)))
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(.white)
             }
             .frame(width: 44, height: 44)
-            .shadow(color: Design.accent.opacity(0.4), radius: 6, y: 2)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(conversation.title)
                     .font(.body.weight(.semibold))
-                    .foregroundStyle(.white)
                 Text(conversation.lastMessage?.text ?? "")
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.55))
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             Spacer()
         }
-        .padding(.vertical, 6)
-        .listRowBackground(Color.clear)
-        .listRowSeparator(.hidden)
+        .padding(.vertical, 4)
     }
 }
 
@@ -145,7 +139,7 @@ struct ThreadView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
                 }
-                .background(AuroraWallpaper())
+                .background(Color(uiColor: .systemBackground))
                 .onChange(of: conversation.messages.count) { _, _ in
                     scrollToLast(proxy)
                 }
@@ -339,14 +333,13 @@ struct ThreadView: View {
         let start = Date()
 
         let client = APIClient(baseURL: AppConfig.baseURL, apiKey: AppConfig.apiKey, model: model)
-        // text モデル (deepseek) は image_url を拒否するため、画像パーツは mimo のターンだけ含める
-        let history = conversation.messages.prefix(messageIndex).map { apiMessage(for: $0, includeImages: useVision) }
+        let history = conversation.messages.prefix(messageIndex).map { apiMessage(for: $0) }
 
         isStreaming = true
         errorMessage = nil
         streamTask = Task {
             do {
-                let stream = client.streamChat(messages: Array(history))
+                let stream = client.streamChat(messages: Array(history), allowImages: useVision)
                 for try await delta in stream {
                     conversation.messages[messageIndex].text += delta
                 }
@@ -384,7 +377,7 @@ struct ThreadView: View {
         !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !pendingImages.isEmpty
     }
 
-    private func apiMessage(for message: ChatMessage, includeImages: Bool) -> APIMessage {
+    private func apiMessage(for message: ChatMessage) -> APIMessage {
         var content = message.text
         if let replyID = message.replyingToID,
            let replied = conversation.messages.first(where: { $0.id == replyID }),
@@ -392,7 +385,7 @@ struct ThreadView: View {
             let quoted = replied.text.split(separator: "\n").map { "> \($0)" }.joined(separator: "\n")
             content = quoted + "\n\n" + content
         }
-        return APIMessage(role: message.isUser ? "user" : "assistant", content: content, images: includeImages ? message.images : [])
+        return APIMessage(role: message.isUser ? "user" : "assistant", content: content, images: message.images)
     }
 
     private func repliedText(for message: ChatMessage) -> String? {
@@ -481,17 +474,12 @@ struct MessageBubble: View {
             if !message.text.isEmpty {
                 Text(message.text)
                     .textSelection(.enabled)
-                    .foregroundStyle(message.isUser ? .white : darkText)
+                    .foregroundStyle(message.isUser ? .white : .primary)
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .background { bubbleBackground }
-        .shadow(color: .black.opacity(0.25), radius: 8, y: 3)
-    }
-
-    private var darkText: Color {
-        Color(red: 0.09, green: 0.09, blue: 0.14)
     }
 
     @ViewBuilder
@@ -501,7 +489,7 @@ struct MessageBubble: View {
                 .fill(Design.userBubble)
         } else {
             Design.bubbleShape(isUser: false, isFirst: isFirst, isLast: isLast)
-                .fill(Color.white.opacity(0.92))
+                .fill(Design.assistantBubble)
         }
     }
 
@@ -518,7 +506,7 @@ struct MessageBubble: View {
             }
         }
         .padding(10)
-        .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 18))
+        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18))
     }
 
     private var footer: some View {
@@ -526,17 +514,17 @@ struct MessageBubble: View {
             if message.isUser {
                 Spacer()
                 if message.isEdited {
-                    FooterChip(text: "編集済み")
+                    Text("編集済み").font(.caption2).foregroundStyle(.secondary)
                 }
-                Text(timeText).font(.caption2).foregroundStyle(.white.opacity(0.6))
+                Text(timeText).font(.caption2).foregroundStyle(.secondary)
                 copyButton
             } else {
-                Text(timeText).font(.caption2).foregroundStyle(.white.opacity(0.6))
+                Text(timeText).font(.caption2).foregroundStyle(.secondary)
                 if let model = message.model {
-                    FooterChip(text: model)
+                    Text(model).font(.caption2).foregroundStyle(.secondary)
                 }
                 if let ms = message.durationMs, ms > 0 {
-                    FooterChip(text: String(format: "%.1f秒", ms / 1000))
+                    Text(String(format: "%.1f秒", ms / 1000)).font(.caption2).foregroundStyle(.secondary)
                 }
                 Spacer()
                 copyButton
@@ -552,7 +540,7 @@ struct MessageBubble: View {
         Button { onAction(.copy) } label: {
             Image(systemName: isCopied ? "checkmark.circle.fill" : "doc.on.doc")
                 .font(.caption)
-                .foregroundStyle(.white.opacity(isCopied ? 1 : 0.7))
+                .foregroundStyle(isCopied ? Design.accent : .secondary)
         }
         .buttonStyle(.plain)
     }
@@ -560,29 +548,14 @@ struct MessageBubble: View {
 
 // MARK: - 共通部品
 
-struct FooterChip: View {
-    let text: String
-
-    var body: some View {
-        Text(text)
-            .font(.caption2)
-            .foregroundStyle(.white.opacity(0.85))
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(.white.opacity(0.14), in: Capsule())
-    }
-}
-
 struct DateDivider: View {
     let date: Date
 
     var body: some View {
         Text(Self.label(for: date))
-            .font(.caption2.weight(.medium))
-            .foregroundStyle(.white.opacity(0.75))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(.white.opacity(0.14), in: Capsule())
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
     }
 
@@ -602,16 +575,12 @@ struct ReplyQuote: View {
                 .frame(width: 3)
             Text(text.split(separator: "\n").first.map(String.init) ?? text)
                 .font(.caption)
-                .foregroundStyle(messageForeground)
+                .foregroundStyle(.secondary)
                 .lineLimit(2)
             Spacer(minLength: 0)
         }
         .padding(6)
-        .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
-    }
-
-    private var messageForeground: Color {
-        Color(red: 0.09, green: 0.09, blue: 0.14).opacity(0.6)
+        .background(Color(uiColor: .systemGray6), in: RoundedRectangle(cornerRadius: 8))
     }
 }
 
@@ -625,21 +594,21 @@ struct ReplyBar: View {
                 .fill(Design.accent)
                 .frame(width: 3)
             VStack(alignment: .leading, spacing: 2) {
-                Text("返信").font(.caption2.weight(.semibold)).foregroundStyle(Design.accentSoft)
+                Text("返信").font(.caption2.weight(.semibold)).foregroundStyle(Design.accent)
                 Text(text.split(separator: "\n").first.map(String.init) ?? text)
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             Spacer()
             Button(action: onClose) {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color.white.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
+        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal, 12)
         .padding(.vertical, 4)
     }
@@ -687,9 +656,9 @@ struct ComposerBar: View {
             Button(action: onAttach) {
                 Image(systemName: "plus")
                     .font(.system(size: 19, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Design.accent)
                     .frame(width: 40, height: 40)
-                    .background(.white.opacity(0.12), in: Circle())
+                    .background(Color(uiColor: .tertiarySystemFill), in: Circle())
             }
             .buttonStyle(.plain)
             .disabled(!isEnabled)
@@ -699,26 +668,22 @@ struct ComposerBar: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .frame(minHeight: 40)
-                .foregroundStyle(.white)
-                .tint(.white)
 
             Button(action: onSend) {
                 Image(systemName: "arrow.up")
                     .font(.system(size: 17, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(width: 40, height: 40)
-                    .background {
-                        Circle().fill(Design.userBubble)
-                    }
+                    .background(Circle().fill(Design.accent))
                     .opacity(canSend ? 1 : 0.35)
             }
             .buttonStyle(.plain)
             .disabled(!isEnabled || !canSend)
         }
         .padding(6)
-        .glassEffect(in: .rect(cornerRadius: 28))
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 26))
         .padding(.horizontal, 12)
-        .padding(.bottom, 10)
+        .padding(.bottom, 8)
     }
 }
 
@@ -729,7 +694,7 @@ struct TypingIndicator: View {
         HStack(spacing: 4) {
             ForEach(0..<3, id: \.self) { index in
                 Circle()
-                    .fill(Color.white)
+                    .fill(Color.secondary)
                     .frame(width: 6, height: 6)
                     .offset(y: animate ? -4 : 2)
                     .animation(
@@ -740,7 +705,7 @@ struct TypingIndicator: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 18))
+        .background(Color(uiColor: .systemGray6), in: RoundedRectangle(cornerRadius: 18))
         .onAppear { animate = true }
     }
 }
