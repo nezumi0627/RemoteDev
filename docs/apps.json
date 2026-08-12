@@ -10,7 +10,17 @@
       "subtitle": "OpenCode Go 連携の iOS チャットクライアント",
       "localizedDescription": "iOS 26 Liquid Glass デザインのチャットアプリ。OpenCode Go を介して DeepSeek V4 Flash と会話できます。",
       "iconURL": "https://github.com/nezumi0627.png",
-      "versions": []
+      "versions": [
+        {
+          "version": "0.1.0",
+          "build": 1,
+          "date": "2026-08-12",
+          "downloadURL": "https://github.com/nezumi0627/RemoteDev/releases/download/v0.1.0-build1/RemoteDev-v0.1.0-build1-e3b9961.ipa",
+          "size": 59643,
+          "sha256": "d3a845524450eacaa8605ae10701ce07ea5d9ae55fbd1ea1636988870e9520da",
+          "localizedDescription": "Build 1 - 自動ビルドによる更新"
+        }
+      ]
     }
   ]
 }
