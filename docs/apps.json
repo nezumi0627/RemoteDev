@@ -12,6 +12,15 @@
       "iconURL": "https://github.com/nezumi0627.png",
       "versions": [
         {
+          "version": "0.2.0",
+          "build": 2,
+          "date": "2026-08-12",
+          "downloadURL": "https://github.com/nezumi0627/RemoteDev/releases/download/v0.2.0-build2/RemoteDev-v0.2.0-build2-f5e682c.ipa",
+          "size": 223253,
+          "sha256": "bc0f59aa3a98c22720a74d94f363043059d1e799a09115b185a345a9ff2eebe4",
+          "localizedDescription": "Build 2 - 自動ビルドによる更新"
+        },
+        {
           "version": "0.1.0",
           "build": 1,
           "date": "2026-08-12",
