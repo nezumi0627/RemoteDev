@@ -121,15 +121,7 @@ struct ThreadView: View {
                 ScrollView {
                     LazyVStack(spacing: 10) {
                         ForEach(conversation.messages) { message in
-                            MessageBubble(
-                                message: message,
-                                repliedText: repliedText(for: message),
-                                isEditing: editingID == message.id,
-                                editText: $editDraft,
-                                isCopied: copiedMessageID == message.id,
-                                onAction: { handleAction($0, for: message) }
-                            )
-                            .id(message.id)
+                            bubble(for: message)
                         }
                         if isStreaming {
                             HStack {
@@ -324,6 +316,18 @@ struct ThreadView: View {
     }
 
     // MARK: - Helpers
+
+    private func bubble(for message: ChatMessage) -> some View {
+        MessageBubble(
+            message: message,
+            repliedText: repliedText(for: message),
+            isEditing: editingID == message.id,
+            editText: $editDraft,
+            isCopied: copiedMessageID == message.id,
+            onAction: { action in handleAction(action, for: message) }
+        )
+        .id(message.id)
+    }
 
     private var canSend: Bool {
         !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !pendingImages.isEmpty
