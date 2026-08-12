@@ -13,6 +13,15 @@
       "versions": [
         {
           "version": "0.5.0",
+          "build": 11,
+          "date": "2026-08-12",
+          "downloadURL": "https://github.com/nezumi0627/RemoteDev/releases/download/v0.5.0-build11/RemoteDev-v0.5.0-build11-ecb8fdb.ipa",
+          "size": 337043,
+          "sha256": "9bbbf67d66dc1bdf7662f2b74a945c6b9d43161f339559a0eb8c498855b6ff06",
+          "localizedDescription": "Build 11 - 自動ビルドによる更新"
+        },
+        {
+          "version": "0.5.0",
           "build": 10,
           "date": "2026-08-12",
           "downloadURL": "https://github.com/nezumi0627/RemoteDev/releases/download/v0.5.0-build10/RemoteDev-v0.5.0-build10-b3fac98.ipa",
@@ -46,15 +55,6 @@
           "size": 238812,
           "sha256": "b797e069b651c19bfaf0e9f00b06b1e8d0ebd0ea53725fabce9e2134dfcef1eb",
           "localizedDescription": "Build 3 - 自動ビルドによる更新"
-        },
-        {
-          "version": "0.2.0",
-          "build": 2,
-          "date": "2026-08-12",
-          "downloadURL": "https://github.com/nezumi0627/RemoteDev/releases/download/v0.2.0-build2/RemoteDev-v0.2.0-build2-f5e682c.ipa",
-          "size": 223253,
-          "sha256": "bc0f59aa3a98c22720a74d94f363043059d1e799a09115b185a345a9ff2eebe4",
-          "localizedDescription": "Build 2 - 自動ビルドによる更新"
         }
       ]
     }
