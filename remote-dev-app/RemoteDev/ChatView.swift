@@ -146,7 +146,7 @@ struct ThreadView: View {
                 ReplyBar(text: replyToMessage.text) { self.replyToMessage = nil }
             }
             if !pendingImages.isEmpty {
-                PendingImagesRow(images: pendingImages) { removeImage($0) }
+                PendingImagesRow(images: pendingImages) { removeImage(at: $0) }
             }
             ComposerBar(
                 text: $draft,
