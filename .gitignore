@@ -52,3 +52,6 @@ unsigned-ipa-debug-logs/
 *.pem
 *.key
 opencode-*.json
+
+# PC server generated pairing QR
+pc-server/pair.png

@@ -12,8 +12,8 @@ enum AppConfig {
     static let defaultModel = "deepseek-v4-flash"
     /// 既定の画像生成モデル
     static let defaultImageModel = "mimo-v2.5"
-    /// 既定の API ベース URL (OpenAI 互換)
-    static let defaultBaseURL = "https://opencode.ai/zen/v1"
+    /// 既定の API ベース URL (OpenCode Go、OpenAI 互換)
+    static let defaultBaseURL = "https://opencode.ai/zen/go/v1"
 
     static let apiKeyKey = "opencode.apiKey"
     static let baseURLKey = "opencode.baseURL"

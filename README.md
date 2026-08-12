@@ -6,16 +6,16 @@ GitHub Actions で署名無し IPA を自動ビルドし、LiveContainer / SideS
 
 ## 機能
 
-- **チャット**: OpenCode Zen と SSE ストリーミング会話（Telegram 風ポップ背景）
+- **チャット**: OpenCode Go と SSE ストリーミング会話（Telegram 風ポップ背景）
 - **画像生成**: mimo モデルで画像生成・写真ライブラリへ保存
-- **PC同期**: Claude Code の会話を**引き継ぎ**、**進捗**を確認、**スキル**と**MCP サーバ**を閲覧
+- **PC同期**: Claude Code の会話を**引き継ぎ**、**進捗**を確認、**スキル**と**MCP サーバ**を閲覧。**QR を読み取るだけでペアリング**して次回以降は自動接続
 - **設定**: API キー / ベース URL / モデル / PC 接続 + **API キー動作テスト**ボタン
 
-### モデル
+### モデル（OpenCode Go）
 
 - チャット: `deepseek-v4-flash`（デフォルト、設定で変更可）
 - 画像生成: `mimo-v2.5`（デフォルト、設定で変更可）
-- API ベース URL: `https://opencode.ai/zen/v1`（OpenAI 互換 /chat/completions）
+- API ベース URL: `https://opencode.ai/zen/go/v1`（OpenAI 互換 /chat/completions）
 
 ## PC コンパニオン（会話の引き継ぎ・進捗・スキル・MCP）
 
@@ -26,7 +26,7 @@ cd pc-server
 python server.py        # 起動（Python 3 のみ、追加インストール不要）
 ```
 
-起動すると LAN IP とポート（既定 8000）が表示されます。iOS の **設定 > PC コンパニオン** に `IP:ポート` を入力し、同じ WiFi に接続してください。
+起動すると **ペアリング QR（pair.png）が開きます**。iOS の **PC同期** タブで QR を読み取るだけで自動接続され、次回以降は手動設定なしで接続します（IP:ポートは端末に保存されます）。QR が読めない場合や手動で設定する場合は、iOS の **設定 > PC コンパニオン** に `IP:ポート` を入力してください。同じ WiFi に接続する必要があります。
 
 提供エンドポイント（`http://<PC-IP>:8000/api/...`）:
 - `conversations` — Claude Code の会話一覧

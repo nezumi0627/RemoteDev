@@ -69,6 +69,7 @@ struct PCSyncView: View {
     @State private var errorMessage: String?
     @State private var isLoading = false
     @State private var statusText = ""
+    @State private var showScanner = false
 
     private var baseURL: String { "http://\(pcHost):\(pcPort)" }
     private var client: PCClient { PCClient(baseURL: baseURL) }
@@ -95,6 +96,21 @@ struct PCSyncView: View {
                         }
                     }
                     .disabled(pcHost.isEmpty || isLoading)
+
+                    Button {
+                        showScanner = true
+                    } label: {
+                        Label("QRコードを読み取ってペアリング", systemImage: "qrcode.viewfinder")
+                    }
+                    .buttonStyle(.bordered)
+                    .fullScreenCover(isPresented: $showScanner) {
+                        QRScannerView { payload in
+                            showScanner = false
+                            pair(from: payload)
+                        } onCancel: {
+                            showScanner = false
+                        }
+                    }
 
                     if let errorMessage {
                         Text(errorMessage)
@@ -206,6 +222,19 @@ struct PCSyncView: View {
     }
 
     // MARK: - Actions
+
+    /// PC が表示した QR (RemoteDev|1|<ip>|<port>) を読み取って保存し、自動接続する
+    private func pair(from payload: String) {
+        let parts = payload.split(separator: "|").map(String.init)
+        guard parts.count >= 4, parts[0] == "RemoteDev", parts[1] == "1" else {
+            errorMessage = "無効なペアリング情報です"
+            return
+        }
+        pcHost = parts[2]
+        pcPort = parts[3]
+        statusText = "ペアリング完了（\(parts[2]):\(parts[3])）。次回から自動接続します"
+        Task { await loadAll() }
+    }
 
     private func loadAll() async {
         guard !pcHost.isEmpty else {

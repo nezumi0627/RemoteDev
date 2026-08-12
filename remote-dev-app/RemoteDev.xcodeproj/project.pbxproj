@@ -18,6 +18,7 @@
 		A1234567890123456789030D /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789030C /* AppModel.swift */; };
 		A1234567890123456789030F /* ImageGenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789030E /* ImageGenView.swift */; };
 		A1234567890123456789031B /* PCSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789031A /* PCSyncView.swift */; };
+		A1234567890123456789032B /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789032A /* QRScannerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,7 @@
 		A1234567890123456789030C /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		A1234567890123456789030E /* ImageGenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGenView.swift; sourceTree = "<group>"; };
 		A1234567890123456789031A /* PCSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PCSyncView.swift; sourceTree = "<group>"; };
+		A1234567890123456789032A /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +79,7 @@
 				A1234567890123456789030C /* AppModel.swift */,
 				A1234567890123456789030E /* ImageGenView.swift */,
 				A1234567890123456789031A /* PCSyncView.swift */,
+				A1234567890123456789032A /* QRScannerView.swift */,
 				A1234567890123456789012F /* Assets.xcassets */,
 				A1234567890123456789013D /* Info.plist */,
 				A1234567890123456789014C /* Preview Content */,
@@ -171,6 +174,7 @@
 				A1234567890123456789030D /* AppModel.swift in Sources */,
 				A1234567890123456789030F /* ImageGenView.swift in Sources */,
 				A1234567890123456789031B /* PCSyncView.swift in Sources */,
+				A1234567890123456789032B /* QRScannerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
