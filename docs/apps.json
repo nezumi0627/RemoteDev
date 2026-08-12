@@ -1,0 +1,16 @@
+{
+  "name": "RemoteDev Source",
+  "identifier": "com.nezumi0627.remotedev.source",
+  "sourceURL": "https://nezumi0627.github.io/RemoteDev/apps.json",
+  "apps": [
+    {
+      "name": "RemoteDev",
+      "bundleIdentifier": "com.nezumi0627.remotedev",
+      "developerName": "nezumi0627",
+      "subtitle": "OpenCode Go 連携の iOS チャットクライアント",
+      "localizedDescription": "iOS 26 Liquid Glass デザインのチャットアプリ。OpenCode Go を介して DeepSeek V4 Flash と会話できます。",
+      "iconURL": "https://github.com/nezumi0627.png",
+      "versions": []
+    }
+  ]
+}
