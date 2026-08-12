@@ -2,7 +2,7 @@
 //  ImageGenView.swift
 //  RemoteDev
 //
-//  画像生成タブ (OpenCode Zen の mimo モデル、chat/completions 経由)。
+//  画像生成タブ (Pollinations: 無料・キー不要)。オーロラ壁紙 + ガラスカード。
 //
 
 import SwiftUI
@@ -18,54 +18,69 @@ struct ImageGenView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    TextField("生成したい画像の説明（例: 夕焼けの富士山、アニメ風）", text: $prompt, axis: .vertical)
-                        .lineLimit(1...4)
-                        .textFieldStyle(.roundedBorder)
-                        .textInputAutocapitalization(.never)
+            ZStack {
+                AuroraWallpaper()
+                ScrollView {
+                    VStack(spacing: 16) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("画像生成")
+                                .font(.headline.weight(.semibold))
+                                .foregroundStyle(Design.accentSoft)
+                            TextField("生成したい画像の説明（例: 夕焼けの富士山、アニメ風）", text: $prompt, axis: .vertical)
+                                .lineLimit(1...4)
+                                .textFieldStyle(.roundedBorder)
+                                .textInputAutocapitalization(.never)
 
-                    Button {
-                        Task { await generate() }
-                    } label: {
-                        HStack {
-                            if isGenerating {
-                                ProgressView().tint(.white)
-                            } else {
-                                Image(systemName: "sparkles")
+                            Button {
+                                Task { await generate() }
+                            } label: {
+                                HStack {
+                                    if isGenerating {
+                                        ProgressView().tint(.white)
+                                    } else {
+                                        Image(systemName: "sparkles")
+                                    }
+                                    Text(isGenerating ? "生成中..." : "生成（\(imageModel)）")
+                                        .font(.body.weight(.semibold))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 4)
                             }
-                            Text(isGenerating ? "生成中..." : "生成 (\(imageModel))")
+                            .buttonStyle(.borderedProminent)
+                            .tint(Design.accent)
+                            .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isGenerating)
                         }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isGenerating)
+                        .glassCard()
 
-                    if let image = generatedImage {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .shadow(radius: 6)
+                        if let image = generatedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .shadow(color: .black.opacity(0.4), radius: 12, y: 6)
 
-                        Button {
-                            UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-                            status = "写真ライブラリに保存しました"
-                        } label: {
-                            Label("写真に保存", systemImage: "square.and.arrow.down")
+                            Button {
+                                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                                status = "写真ライブラリに保存しました"
+                            } label: {
+                                Label("写真に保存", systemImage: "square.and.arrow.down")
+                                    .font(.body.weight(.medium))
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(Design.accentSoft)
                         }
-                        .buttonStyle(.bordered)
-                    }
 
-                    if let status {
-                        Text(status)
-                            .font(.caption)
-                            .foregroundStyle(status.hasPrefix("エラー") ? .red : .secondary)
+                        if let status {
+                            Text(status)
+                                .font(.caption)
+                                .foregroundStyle(status.hasPrefix("エラー") ? .red : .secondary)
+                        }
                     }
+                    .padding()
                 }
-                .padding()
             }
             .navigationTitle("画像生成")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 

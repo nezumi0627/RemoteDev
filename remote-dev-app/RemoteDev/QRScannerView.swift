@@ -7,6 +7,7 @@
 //  ホスト VC が child として保持し viewDidAppear で startScanning() を呼ぶ。
 //
 
+import AVFoundation
 import SwiftUI
 import VisionKit
 
@@ -53,7 +54,68 @@ final class QRScannerHostViewController: UIViewController, DataScannerViewContro
         scanner.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(scanner.view)
         scanner.didMove(toParent: self)
+        addScanOverlay()
+        addTorchButton()
         addCloseButton()
+    }
+
+    // MARK: Overlay UI
+
+    private func addScanOverlay() {
+        let frame = UIView()
+        frame.layer.borderColor = UIColor.white.withAlphaComponent(0.9).cgColor
+        frame.layer.borderWidth = 2
+        frame.layer.cornerRadius = 24
+        frame.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(frame)
+
+        let label = UILabel()
+        label.text = "PC の QR コードを枠に合わせてください"
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 14, weight: .medium)
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(label)
+
+        NSLayoutConstraint.activate([
+            frame.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            frame.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -40),
+            frame.widthAnchor.constraint(equalToConstant: 260),
+            frame.heightAnchor.constraint(equalToConstant: 260),
+            label.topAnchor.constraint(equalTo: frame.bottomAnchor, constant: 20),
+            label.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            label.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+        ])
+    }
+
+    private func addTorchButton() {
+        guard let device = AVCaptureDevice.default(for: .video), device.hasTorch else { return }
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "flashlight.off.fill"), for: .normal)
+        button.tintColor = .white
+        button.backgroundColor = .black.withAlphaComponent(0.5)
+        button.layer.cornerRadius = 20
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addAction(UIAction { [weak device, weak button] _ in
+            guard let device else { return }
+            do {
+                try device.lockForConfiguration()
+                device.torchMode = device.torchMode == .on ? .off : .on
+                device.unlockForConfiguration()
+                button?.setImage(
+                    UIImage(systemName: device.torchMode == .on ? "flashlight.on.fill" : "flashlight.off.fill"),
+                    for: .normal
+                )
+            } catch {}
+        }, for: .touchUpInside)
+        view.addSubview(button)
+        NSLayoutConstraint.activate([
+            button.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            button.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            button.widthAnchor.constraint(equalToConstant: 40),
+            button.heightAnchor.constraint(equalToConstant: 40),
+        ])
     }
 
     override func viewDidAppear(_ animated: Bool) {

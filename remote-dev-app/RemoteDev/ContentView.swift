@@ -16,7 +16,7 @@ struct ContentView: View {
             Tab("チャット", systemImage: "bubble.left.and.bubble.right.fill", value: AppModel.Tab.chat) {
                 ChatListView()
             }
-            Tab("画像生成", systemImage: "paintbrush.fill", value: AppModel.Tab.image) {
+            Tab("画像生成", systemImage: "sparkles", value: AppModel.Tab.image) {
                 ImageGenView()
             }
             Tab("PC同期", systemImage: "desktopcomputer", value: AppModel.Tab.pc) {
@@ -26,6 +26,8 @@ struct ContentView: View {
                 SettingsView()
             }
         }
+        .tint(Design.accent)
+        .preferredColorScheme(.dark)
     }
 }
 
