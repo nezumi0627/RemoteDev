@@ -391,7 +391,7 @@ def _qr_encode(payload):
     return _qr_matrix(version, codewords, best_m)
 
 
-def _qr_png(matrix, scale=8, quiet=4):
+def _qr_png(matrix, scale=12, quiet=4):
     n = len(matrix)
     size = (n + 2 * quiet) * scale
     px = [[0xFF] * size for _ in range(size)]

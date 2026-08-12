@@ -224,9 +224,10 @@ struct PCSyncView: View {
     // MARK: - Actions
 
     /// PC が表示した QR (RemoteDev|1|<ip>|<port>) を読み取って保存し、自動接続する
-    private func pair(from payload: String) {
-        let parts = payload.split(separator: "|").map(String.init)
-        guard parts.count >= 4, parts[0] == "RemoteDev", parts[1] == "1" else {
+    private func pair(from rawPayload: String) {
+        let payload = rawPayload.trimmingCharacters(in: .whitespacesAndNewlines)
+        let parts = payload.split(separator: "|").map { $0.trimmingCharacters(in: .whitespaces) }
+        guard parts.count >= 4, parts[0] == "RemoteDev" else {
             errorMessage = "無効なペアリング情報です"
             return
         }
