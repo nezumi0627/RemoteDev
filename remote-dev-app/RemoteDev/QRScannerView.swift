@@ -3,7 +3,8 @@
 //  RemoteDev
 //
 //  VisionKit の DataScanner で QR を読み取る (iOS 16+)。
-//  スキャンは startScanning() を明示しないと始まらないので viewDidAppear で開始する。
+//  DataScannerViewController はスキャンが自動開始しないため、
+//  ホスト VC が child として保持し viewDidAppear で startScanning() を呼ぶ。
 //
 
 import SwiftUI
@@ -15,7 +16,7 @@ struct QRScannerView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> UIViewController {
         if DataScannerViewController.isSupported && DataScannerViewController.isAvailable {
-            return QRScannerViewController(onResult: onResult, onCancel: onCancel)
+            return QRScannerHostViewController(onResult: onResult, onCancel: onCancel)
         }
         return QRUnavailableViewController(onCancel: onCancel)
     }
@@ -23,42 +24,48 @@ struct QRScannerView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
 
-// MARK: - Scanner
+// MARK: - Scanner host (containment: DataScannerViewController は非 open のため継承不可)
 
-final class QRScannerViewController: DataScannerViewController, DataScannerViewControllerDelegate {
+final class QRScannerHostViewController: UIViewController, DataScannerViewControllerDelegate {
     private let onResult: (String) -> Void
     private let onCancel: () -> Void
+    private let scanner = DataScannerViewController(
+        recognizedDataTypes: [.barcode(symbologies: [.qr])],
+        qualityLevel: .accurate,
+        isHighFrameRateTrackingEnabled: true,
+        isHighlightingEnabled: true
+    )
 
     init(onResult: @escaping (String) -> Void, onCancel: @escaping () -> Void) {
         self.onResult = onResult
         self.onCancel = onCancel
-        super.init(
-            recognizedDataTypes: [.barcode(symbologies: [.qr])],
-            qualityLevel: .accurate,
-            isHighFrameRateTrackingEnabled: true,
-            isHighlightingEnabled: true
-        )
-        delegate = self
+        super.init(nibName: nil, bundle: nil)
+        scanner.delegate = self
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        addChild(scanner)
+        scanner.view.frame = view.bounds
+        scanner.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(scanner.view)
+        scanner.didMove(toParent: self)
+        addCloseButton()
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        try? startScanning()
+        try? scanner.startScanning()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        if isScanning {
-            stopScanning()
+        if scanner.isScanning {
+            scanner.stopScanning()
         }
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        addCloseButton()
     }
 
     // MARK: DataScannerViewControllerDelegate
