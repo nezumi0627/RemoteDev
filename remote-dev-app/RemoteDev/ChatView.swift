@@ -159,7 +159,7 @@ struct ThreadView: View {
             ComposerBar(
                 text: $draft,
                 isEnabled: !isStreaming,
-                canSend: !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !pendingImages.isEmpty,
+                canSend: canSend,
                 onAttach: { showPhotoPicker = true },
                 onSend: { send() }
             )
@@ -324,6 +324,10 @@ struct ThreadView: View {
     }
 
     // MARK: - Helpers
+
+    private var canSend: Bool {
+        !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !pendingImages.isEmpty
+    }
 
     private func apiMessage(for message: ChatMessage) -> APIMessage {
         var content = message.text

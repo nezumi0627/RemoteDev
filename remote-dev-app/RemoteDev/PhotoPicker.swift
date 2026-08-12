@@ -41,9 +41,14 @@ struct PhotoPicker: UIViewControllerRepresentable {
             Task {
                 var images: [Data] = []
                 for result in results {
-                    if let provider = result.itemProvider,
-                       provider.hasItemConformingToTypeIdentifier(UTType.image.identifier),
-                       let data = try? await provider.loadDataRepresentation(forTypeIdentifier: UTType.image.identifier) {
+                    guard let provider = result.itemProvider,
+                          provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) else { continue }
+                    let data = await withCheckedContinuation { continuation in
+                        provider.loadDataRepresentation(forTypeIdentifier: UTType.image.identifier) { data, _ in
+                            continuation.resume(returning: data)
+                        }
+                    }
+                    if let data {
                         images.append(data)
                     }
                 }
