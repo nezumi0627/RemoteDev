@@ -9,8 +9,6 @@ import SwiftUI
 import UIKit
 
 struct ImageGenView: View {
-    @AppStorage(AppConfig.apiKeyKey) private var apiKey = ""
-    @AppStorage(AppConfig.baseURLKey) private var baseURL = AppConfig.defaultBaseURL
     @AppStorage(AppConfig.imageModelKey) private var imageModel = AppConfig.defaultImageModel
 
     @State private var prompt = ""
@@ -74,16 +72,11 @@ struct ImageGenView: View {
     private func generate() async {
         let text = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        guard !apiKey.isEmpty else {
-            status = "エラー: API キーが未設定です"
-            return
-        }
         isGenerating = true
         status = "生成中..."
         defer { isGenerating = false }
         do {
-            let data = try await APIClient(baseURL: baseURL, apiKey: apiKey, model: imageModel)
-                .generateImage(prompt: text)
+            let data = try await PollinationsClient(model: imageModel).generateImage(prompt: text)
             if let image = UIImage(data: data) {
                 generatedImage = image
                 status = "完了"

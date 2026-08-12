@@ -11,6 +11,7 @@ struct SettingsView: View {
     @AppStorage(AppConfig.apiKeyKey) private var apiKey = ""
     @AppStorage(AppConfig.baseURLKey) private var baseURL = AppConfig.defaultBaseURL
     @AppStorage(AppConfig.chatModelKey) private var chatModel = AppConfig.defaultModel
+    @AppStorage(AppConfig.visionModelKey) private var visionModel = AppConfig.defaultVisionModel
     @AppStorage(AppConfig.imageModelKey) private var imageModel = AppConfig.defaultImageModel
     @AppStorage(AppConfig.pcHostKey) private var pcHost = ""
     @AppStorage(AppConfig.pcPortKey) private var pcPort = "8000"
@@ -21,7 +22,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("OpenCode Zen") {
+                Section("OpenCode Go") {
                     SecureField("API キー", text: $apiKey)
                         .textContentType(.password)
                     TextField("ベース URL", text: $baseURL)
@@ -36,7 +37,13 @@ struct SettingsView: View {
                     TextField("チャットモデル", text: $chatModel)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                    TextField("画像生成モデル", text: $imageModel)
+                    TextField("画像読取モデル", text: $visionModel)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    Text("画像を添付したターンは画像読取モデル（mimo）が使われます。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    TextField("画像生成モデル (Pollinations)", text: $imageModel)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 }

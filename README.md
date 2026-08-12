@@ -6,16 +6,18 @@ GitHub Actions で署名無し IPA を自動ビルドし、LiveContainer / SideS
 
 ## 機能
 
-- **チャット**: OpenCode Go と SSE ストリーミング会話（Telegram 風ポップ背景）
-- **画像生成**: mimo モデルで画像生成・写真ライブラリへ保存
+- **チャット**: OpenCode Go と SSE ストリーミング会話（Telegram 風ポップ背景）。**コピー / リプライ / 編集 / 再送信 / 再生成**、メッセージ下に**モデル名と回答速度**を表示
+- **画像添付**: 写真を選択して送信（そのターンのみ **mimo** が画像を読み取る。乱用防止のため画像があるときだけ）
+- **画像生成**: Pollinations（無料・キー不要）で生成・写真ライブラリへ保存
 - **PC同期**: Claude Code の会話を**引き継ぎ**、**進捗**を確認、**スキル**と**MCP サーバ**を閲覧。**QR を読み取るだけでペアリング**して次回以降は自動接続
 - **設定**: API キー / ベース URL / モデル / PC 接続 + **API キー動作テスト**ボタン
 
-### モデル（OpenCode Go）
+### モデル
 
-- チャット: `deepseek-v4-flash`（デフォルト、設定で変更可）
-- 画像生成: `mimo-v2.5`（デフォルト、設定で変更可）
-- API ベース URL: `https://opencode.ai/zen/go/v1`（OpenAI 互換 /chat/completions）
+- チャット: `deepseek-v4-flash`（デフォルト。チャット上部のメニューから `deepseek-v4-pro` / `glm-5.2` / `kimi-k3` 等に切替可）
+- 画像読取: `mimo-v2.5`（画像を添付したターンだけ自動で使用）
+- 画像生成: `flux`（Pollinations、設定で変更可）
+- API ベース URL: `https://opencode.ai/zen/go/v1`（OpenAI 互換 /chat/completions。Go は text のみで画像出力非対応のため、生成は Pollinations）
 
 ## PC コンパニオン（会話の引き継ぎ・進捗・スキル・MCP）
 

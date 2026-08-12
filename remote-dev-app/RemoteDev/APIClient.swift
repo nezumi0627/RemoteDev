@@ -10,6 +10,13 @@ import Foundation
 struct APIMessage: Sendable {
     let role: String
     let content: String
+    let images: [Data]
+
+    init(role: String, content: String, images: [Data] = []) {
+        self.role = role
+        self.content = content
+        self.images = images
+    }
 }
 
 enum OpenAIError: LocalizedError {
@@ -47,7 +54,7 @@ struct APIClient {
                     let (bytes, response) = try await URLSession.shared.bytes(for: makeRequest(path: "/chat/completions", body: [
                         "model": model,
                         "stream": true,
-                        "messages": messages.map { ["role": $0.role, "content": $0.content] },
+                        "messages": messages.map { Self.messageBody($0) },
                     ]))
                     guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
                         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
@@ -90,30 +97,22 @@ struct APIClient {
         }
     }
 
-    // MARK: - Image generation (mimo 系は chat/completions 経由)
-
-    func generateImage(prompt: String) async throws -> Data {
-        let (data, response) = try await URLSession.shared.data(for: makeRequest(path: "/chat/completions", body: [
-            "model": model,
-            "messages": [["role": "user", "content": prompt]],
-            "max_tokens": 4096,
-        ]))
-        guard let http = response as? HTTPURLResponse else { throw OpenAIError.noImage }
-        guard http.statusCode == 200 else {
-            let msg = Self.extractErrorMessage(from: String(data: data, encoding: .utf8) ?? "")
-            throw OpenAIError.http(http.statusCode, msg)
-        }
-        let ref = try ImageExtractor.extract(from: data)
-        switch ref {
-        case .data(let imageData):
-            return imageData
-        case .url(let url):
-            let (imageData, _) = try await URLSession.shared.data(from: url)
-            return imageData
-        }
-    }
-
     // MARK: - Internal
+
+    /// メッセージ本文を構築。画像があれば OpenAI 互換の image_url パーツにする
+    private static func messageBody(_ message: APIMessage) -> [String: Any] {
+        guard !message.images.isEmpty else {
+            return ["role": message.role, "content": message.content]
+        }
+        var parts: [[String: Any]] = []
+        if !message.content.isEmpty {
+            parts.append(["type": "text", "text": message.content])
+        }
+        for image in message.images {
+            parts.append(["type": "image_url", "image_url": ["url": "data:image/jpeg;base64,\(image.base64EncodedString())"]])
+        }
+        return ["role": message.role, "content": parts]
+    }
 
     private func makeRequest(path: String, body: [String: Any]) throws -> URLRequest {
         guard let url = URL(string: baseURL + path) else { throw OpenAIError.invalidURL }
@@ -168,49 +167,28 @@ struct PCClient {
     }
 }
 
-// MARK: - 画像抽出 (レスポンス形状は未検証のため一元化。形状違いはここで調整)
+// MARK: - 画像生成 (Pollinations: 無料・キー不要。OpenCode Go は画像出力非対応のため)
 
-enum ImageExtractor {
-    enum ImageRef: Sendable {
-        case data(Data)
-        case url(URL)
-    }
+struct PollinationsClient {
+    var model: String
 
-    static func extract(from jsonData: Data) throws -> ImageRef {
-        guard let obj = try? JSONSerialization.jsonObject(with: jsonData) else { throw OpenAIError.noImage }
-        guard let ref = findImageRef(in: obj) else { throw OpenAIError.noImage }
-        return ref
-    }
-
-    private static func findImageRef(in obj: Any) -> ImageRef? {
-        var result: ImageRef?
-        func walk(_ value: Any) {
-            if result != nil { return }
-            if let s = value as? String {
-                if let ref = ref(from: s) { result = ref }
-            } else if let dict = value as? [String: Any] {
-                for (_, v) in dict { walk(v) }
-            } else if let arr = value as? [Any] {
-                for v in arr { walk(v) }
-            }
+    func generateImage(prompt: String, width: Int = 1024, height: Int = 1024) async throws -> Data {
+        var components = URLComponents(string: "https://image.pollinations.ai/prompt/")
+        let encoded = prompt.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? prompt
+        components?.path.append(encoded)
+        components?.queryItems = [
+            URLQueryItem(name: "width", value: String(width)),
+            URLQueryItem(name: "height", value: String(height)),
+            URLQueryItem(name: "nologo", value: "true"),
+            URLQueryItem(name: "model", value: model),
+        ]
+        guard let url = components?.url else { throw OpenAIError.invalidURL }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 120
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            throw OpenAIError.http((response as? HTTPURLResponse)?.statusCode ?? 0, "画像サービスエラー")
         }
-        walk(obj)
-        return result
-    }
-
-    private static func ref(from raw: String) -> ImageRef? {
-        let s = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        // data URL
-        if s.hasPrefix("data:image"), let comma = s.firstIndex(of: ",") {
-            let b64 = s[s.index(after: comma)...]
-                .prefix { $0.isLetter || $0.isNumber || $0 == "+" || $0 == "/" || $0 == "=" }
-            if let data = Data(base64Encoded: String(b64)) { return .data(data) }
-        }
-        // https URL (markdown ![alt](...) や裸の URL を想定。http は ATS で不可)
-        if let range = s.range(of: "https://") {
-            let urlStr = String(s[range.lowerBound...].prefix { !$0.isWhitespace && $0 != ")" && $0 != "\"" })
-            if let url = URL(string: urlStr) { return .url(url) }
-        }
-        return nil
+        return data
     }
 }
