@@ -2,18 +2,27 @@
 //  ContentView.swift
 //  RemoteDev
 //
-//  チャット + 設定 のタブ構成。
+//  チャット / 画像生成 / PC同期 / 設定 の 4 タブ構成。
 //
 
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(AppModel.self) private var appModel
+
     var body: some View {
-        TabView {
-            Tab("チャット", systemImage: "bubble.left.and.bubble.right.fill") {
+        @Bindable var model = appModel
+        TabView(selection: $model.selectedTab) {
+            Tab("チャット", systemImage: "bubble.left.and.bubble.right.fill", value: AppModel.Tab.chat) {
                 ChatListView()
             }
-            Tab("設定", systemImage: "gearshape.fill") {
+            Tab("画像生成", systemImage: "paintbrush.fill", value: AppModel.Tab.image) {
+                ImageGenView()
+            }
+            Tab("PC同期", systemImage: "desktopcomputer", value: AppModel.Tab.pc) {
+                PCSyncView()
+            }
+            Tab("設定", systemImage: "gearshape.fill", value: AppModel.Tab.settings) {
                 SettingsView()
             }
         }
@@ -22,4 +31,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environment(AppModel())
 }

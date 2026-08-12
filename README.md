@@ -1,15 +1,41 @@
 # RemoteDev
 
-iOS 26 **Liquid Glass** デザインのチャットクライアント。OpenCode Go を介して **DeepSeek V4 Flash** と会話することを目指すテストアプリ。
+iOS 26 **Liquid Glass** デザインのチャットクライアント。[OpenCode Zen](https://opencode.ai) を介して **DeepSeek V4 Flash** と会話し、画像を生成します。PC の Claude Code と WiFi 経由で同期できます。
 
 GitHub Actions で署名無し IPA を自動ビルドし、LiveContainer / SideStore / AltStore からインストールできます。
 
-## 現在の機能（テスト版）
+## 機能
 
-- 純正メッセージアプリ風の会話リスト + チャットスレッド（Liquid Glass の吹き出し）
-- モデル: DeepSeek V4 Flash（デフォルト）
-- API キー設定画面（端末内のみに保存）
-- 返信はテスト用の仮応答。実 API 接続は次フェーズ
+- **チャット**: OpenCode Zen と SSE ストリーミング会話（Telegram 風ポップ背景）
+- **画像生成**: mimo モデルで画像生成・写真ライブラリへ保存
+- **PC同期**: Claude Code の会話を**引き継ぎ**、**進捗**を確認、**スキル**と**MCP サーバ**を閲覧
+- **設定**: API キー / ベース URL / モデル / PC 接続 + **API キー動作テスト**ボタン
+
+### モデル
+
+- チャット: `deepseek-v4-flash`（デフォルト、設定で変更可）
+- 画像生成: `mimo-v2.5`（デフォルト、設定で変更可）
+- API ベース URL: `https://opencode.ai/zen/v1`（OpenAI 互換 /chat/completions）
+
+## PC コンパニオン（会話の引き継ぎ・進捗・スキル・MCP）
+
+iOS アプリの **PC同期** タブから、PC 上で動く Claude Code の状態を確認できます。
+
+```bash
+cd pc-server
+python server.py        # 起動（Python 3 のみ、追加インストール不要）
+```
+
+起動すると LAN IP とポート（既定 8000）が表示されます。iOS の **設定 > PC コンパニオン** に `IP:ポート` を入力し、同じ WiFi に接続してください。
+
+提供エンドポイント（`http://<PC-IP>:8000/api/...`）:
+- `conversations` — Claude Code の会話一覧
+- `transcript?id=<path>` — 会話の中身（iOS から「引き継ぐ」でチャットに読み込み）
+- `progress` — 現在進行中のセッションの最新状況
+- `skills` / `skill?name=<dir>` — `~/.claude/skills` のスキル
+- `mcp` — MCP サーバ設定一覧
+
+> 注: `~/.claude/projects/*/*.jsonl`（Claude Code のセッション記録）を読み取ります。GUI の Claude Desktop アプリの会話 DB は対象外です。
 
 ## インストール
 
@@ -46,9 +72,10 @@ https://nezumi0627.github.io/RemoteDev/apps.json
 
 ## ロードマップ
 
-- [ ] OpenCode Go API への実接続（設定画面のキーを使用）
-- [ ] エージェント駆動（Claude Desktop 風のタスク実行表示）
-- [ ] 将来: PC 側の OpenCode との会話同期
+- [x] OpenCode Zen API への実接続（ストリーミングチャット + 画像生成）
+- [x] Claude Code の会話引き継ぎ / 進捗 / スキル / MCP 同期（PC コンパニオン）
+- [ ] エージェント駆動（iOS から PC の Claude Code にプロンプト送信）
+- [ ] API キーの Keychain 保存
 
 ## 構成
 
@@ -57,6 +84,7 @@ https://nezumi0627.github.io/RemoteDev/apps.json
 remote-dev-app/                             # Xcode プロジェクト
   RemoteDev.xcodeproj/
   RemoteDev/                                # Swift ソース
+pc-server/                                  # PC コンパニオン (Python 標準ライブラリのみ)
 docs/                                       # GitHub Pages (apps.json, index.html)
 scripts/update_apps_json.py                 # apps.json 更新スクリプト
 ```

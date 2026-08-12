@@ -54,5 +54,14 @@
 		<string>altstore</string>
 		<string>livecontainer</string>
 	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>PC コンパニオン（Claude Code の引き継ぎ・進捗・スキル・MCP 同期）と WiFi 経由で通信するためにローカルネットワークを使用します。</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>生成した画像を写真ライブラリに保存するために使用します。</string>
 </dict>
 </plist>
